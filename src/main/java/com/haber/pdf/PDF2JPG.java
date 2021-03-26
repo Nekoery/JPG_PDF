@@ -1,25 +1,19 @@
 package com.haber.pdf;
 
+import com.haber.CallBack;
 import com.haber.utils.FileUtils;
-import com.haber.utils.JFrameUtils;
-import com.lowagie.text.BadElementException;
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.pdf.PdfWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.CropImageFilter;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,51 +82,45 @@ public class PDF2JPG {
         }
     }
 
-    public static String tojpg(){
+    public static String tojpg(CallBack callBack, String choosePath){
         try{
-            String choosePath = JFrameUtils.getFilePath(); //获取文件所在位置
-            String allPath ="全部;";
-            allPath += FileUtils.getPath(choosePath,".pdf"); //获取文件或文件夹下所有的pdf文件
-            if(allPath.equals("全部;")){
-                JOptionPane.showMessageDialog(null,
-                        "所选文件格式错误或文件夹内无pdf文件", "错误", JOptionPane.PLAIN_MESSAGE);
-                System.exit(0);
-            } else {
-                String [] paths = allPath.split(";");   //将文件进行分批处理
+            List<String> formateList = new ArrayList<String>();
+            formateList.add(".pdf");
+            List<String> filePathList = FileUtils.getPathList(choosePath,formateList);
+            if(filePathList.size() == 0){
+                return "所选文件格式错误或文件夹内无pdf文件";
+            }else {
+                String [] paths = filePathList.toArray(new String[filePathList.size()]);
                 String path = null;
                 try {
                     path = (String) JOptionPane.showInputDialog(null,"请选择转换文件","选择文件",
                             JOptionPane.QUESTION_MESSAGE,null,paths,paths[0]);
                 }catch (Exception e){
-                    JOptionPane.showMessageDialog(null,
-                            "取消了转换", "提示", JOptionPane.PLAIN_MESSAGE);
-                    System.exit(0);
+                    return "取消了转换";
                 }
-                JFrameUtils.LoadingFrame loadingFrame = JFrameUtils.getLoadingFrame();
+                if(path == null || path.length() == 0){
+                    return "取消了转换";
+                }
+                callBack.display();
                 if(path.equals("全部")){
                     for (String eachPath:
                             paths) {
                         if(eachPath.equals("全部")){
                             continue;
                         }
-                        loadingFrame.jLabel.setText("正在转换:");
-                        loadingFrame.jLabel2.setText(eachPath);
                         File file = new File(eachPath);
                         setup(file.getPath(),file.getParent());
                     }
-                    loadingFrame.dispose();
                 }else{
-                    loadingFrame.jLabel.setText("正在转换:");
-                    loadingFrame.jLabel2.setText(path);
                     File file = new File(path);
                     setup(file.getPath(),file.getParent());
-                    loadingFrame.dispose();
                 }
+                callBack.hidedis();
+                return "转换完成，jpg文件与pdf在相同文件夹";
             }
-            return "转换完成，jpg文件与pdf在相同文件夹";
         }catch (Exception e){
             e.printStackTrace();
-            return "Error!";
+            return "Error!未知错误";
         }
 
     }

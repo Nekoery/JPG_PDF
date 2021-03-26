@@ -1,6 +1,7 @@
 package com.haber.pdf;
 
 
+import com.haber.CallBack;
 import com.haber.utils.FileUtils;
 import com.haber.utils.JFrameUtils;
 import com.lowagie.text.*;
@@ -20,12 +21,8 @@ import java.util.List;
 
 public class JPG2PDF {
 
-    public static String toPdf(String imageFolderPath, String pdfPath) {
+    public static String toPdf(CallBack callBack, String imageFolderPath, String pdfPath) {
         try {
-            // 图片文件夹地址
-            // 图片地址
-            String imagePath = null;
-            // PDF文件保存地址
             // 输入流
             FileOutputStream fos = new FileOutputStream(pdfPath);
             // 创建文档
@@ -42,12 +39,10 @@ public class JPG2PDF {
             if(fileList.size() == 0){
                 return "选择文件夹内无jpg或png图片!";
             }
-            JFrameUtils.LoadingFrame loadingFrame = JFrameUtils.getLoadingFrame();
+            callBack.display();
             for(String filePath:
             fileList){
                 System.out.println("转换JPG路径:" + filePath);
-                loadingFrame.jLabel.setText("正在转换:");
-                loadingFrame.jLabel2.setText(filePath);
                 File file = new File(filePath);
                 // 读取图片流
                 img = ImageIO.read(file);
@@ -61,7 +56,7 @@ public class JPG2PDF {
             }
             // 关闭文档
             doc.close();
-            loadingFrame.dispose();
+            callBack.hidedis();
             return "创建完成!文件在当前目录";
         } catch (IOException e) {
             e.printStackTrace();

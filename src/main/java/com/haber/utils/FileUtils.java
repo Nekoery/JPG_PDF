@@ -32,7 +32,7 @@ public class FileUtils {
         }else {
             for(String format:
             formatList){
-                if(file.getName().endsWith(format)){
+                if(file.getName().endsWith(format) && file.length() != 0){
                     allList.add(file.getAbsolutePath());
                 }
             }
