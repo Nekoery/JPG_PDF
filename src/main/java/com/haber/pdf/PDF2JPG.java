@@ -1,5 +1,7 @@
 package com.haber.pdf;
 
+import com.haber.utils.FileUtils;
+import com.haber.utils.JFrameUtils;
 import com.lowagie.text.BadElementException;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -22,7 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-public class PDFExportImage {
+public class PDF2JPG {
 
 
     private static final List excludePage = Arrays.asList(0);
@@ -86,85 +88,53 @@ public class PDFExportImage {
         }
     }
 
-
-    public static String getFilePath(){
-        String path = null;
-        JFileChooser fileChooser = new JFileChooser();
-        FileSystemView fsv = FileSystemView.getFileSystemView();  //获取系统视图
-        fileChooser.setCurrentDirectory(fsv.getHomeDirectory());
-        fileChooser.setDialogTitle("请选择要转换的文件或者文件夹...");
-        fileChooser.setApproveButtonText("确定");
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);//FILES_ONLY 只文件,DIRECTORIES_ONLY 只文件夹,
-        if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(null)) {
-            return fileChooser.getSelectedFile().getPath();
-        }
-        return null;
-    }
-
-    public static String getPath(String path,String format){
-        String temp = new String();
-        if(path == null)
-            return "";
-        File file = new File(path);
-        if(file.isDirectory()){
-            File [] files = file.listFiles();
-            for (File eachFile:
-                    files) {
-                temp += getPath(eachFile.getPath(),format);
-            }
-        }else if(file.isFile()&&file.getName().endsWith(format)){
-            temp = file.getPath()+";";
-        }
-        return temp;
-    }
-    public static void main(String[] args) throws IOException {
-        MyFrame myFrame = null;
-        String choosePath =  getFilePath(); //获取文件所在位置
-        String allPath ="全部;";
-        allPath += getPath(choosePath,".pdf"); //获取文件或文件夹下所有的pdf文件
-        if(allPath.equals("全部;")){
-            JOptionPane.showMessageDialog(null,
-                    "所选文件格式错误或文件夹内无pdf文件", "错误", JOptionPane.PLAIN_MESSAGE);
-            System.exit(0);
-        } else {
-            String [] paths = allPath.split(";");   //将文件进行分批处理
-            String path = null;
-            try {
-                path = (String) JOptionPane.showInputDialog(null,"请选择转换文件","选择文件",
-                        JOptionPane.QUESTION_MESSAGE,null,paths,paths[0]);
-            }catch (Exception e){
+    public static String tojpg(){
+        try{
+            String choosePath = JFrameUtils.getFilePath(); //获取文件所在位置
+            String allPath ="全部;";
+            allPath += FileUtils.getPath(choosePath,".pdf"); //获取文件或文件夹下所有的pdf文件
+            if(allPath.equals("全部;")){
                 JOptionPane.showMessageDialog(null,
-                        "取消了转换", "提示", JOptionPane.PLAIN_MESSAGE);
+                        "所选文件格式错误或文件夹内无pdf文件", "错误", JOptionPane.PLAIN_MESSAGE);
                 System.exit(0);
-            }
-            if(path.equals("全部")){
-                myFrame = new MyFrame();
-                for (String eachPath:
-                        paths) {
-                    if(eachPath.equals("全部")){
-                        continue;
-                    }
-                    myFrame.jLabel.setText("正在转换:");
-                    myFrame.jLabel2.setText(eachPath);
-                    File file = new File(eachPath);
-                    setup(file.getPath(),file.getParent());
+            } else {
+                String [] paths = allPath.split(";");   //将文件进行分批处理
+                String path = null;
+                try {
+                    path = (String) JOptionPane.showInputDialog(null,"请选择转换文件","选择文件",
+                            JOptionPane.QUESTION_MESSAGE,null,paths,paths[0]);
+                }catch (Exception e){
+                    JOptionPane.showMessageDialog(null,
+                            "取消了转换", "提示", JOptionPane.PLAIN_MESSAGE);
+                    System.exit(0);
                 }
-                myFrame.dispose();
-            }else{
-                myFrame = new MyFrame();
-                myFrame.jLabel.setText("正在转换:");
-                myFrame.jLabel2.setText(path);
-                File file = new File(path);
-                setup(file.getPath(),file.getParent());
-                myFrame.dispose();
+                JFrameUtils.LoadingFrame loadingFrame = JFrameUtils.getLoadingFrame();
+                if(path.equals("全部")){
+                    for (String eachPath:
+                            paths) {
+                        if(eachPath.equals("全部")){
+                            continue;
+                        }
+                        loadingFrame.jLabel.setText("正在转换:");
+                        loadingFrame.jLabel2.setText(eachPath);
+                        File file = new File(eachPath);
+                        setup(file.getPath(),file.getParent());
+                    }
+                    loadingFrame.dispose();
+                }else{
+                    loadingFrame.jLabel.setText("正在转换:");
+                    loadingFrame.jLabel2.setText(path);
+                    File file = new File(path);
+                    setup(file.getPath(),file.getParent());
+                    loadingFrame.dispose();
+                }
             }
+            return "转换完成，jpg文件与pdf在相同文件夹";
+        }catch (Exception e){
+            e.printStackTrace();
+            return "Error!";
         }
-        JOptionPane.showMessageDialog(null,
-                "转换完成，jpg文件与pdf在相同文件夹", "转换成功", JOptionPane.PLAIN_MESSAGE);
-        System.exit(0);
+
     }
-
-
-
 
 }

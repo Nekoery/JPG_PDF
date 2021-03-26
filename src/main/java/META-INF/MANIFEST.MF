@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Main-Class: com.haber.pdf.PDFExportImage
+Main-Class: com.haber.pdf.PDF2JPG
 Class-Path: pdfbox-2.0.15.jar fontbox-2.0.15.jar commons-logging-1.2.jar
 
